@@ -31,6 +31,9 @@ The Movie Recommendation System is intended for individuals who seek personalize
    
 ## Common Tools & Libraries
   1.Programming Language: Python (most common) or R.
+  
   2.Data Handling: Pandas and NumPy.
+  
   3.Machine Learning: Scikit-learn for vectorization and similarity.
+  
   4.Advanced Models: Surprise for collaborative filtering or TensorFlow/PyTorch for deep learning-based approaches
