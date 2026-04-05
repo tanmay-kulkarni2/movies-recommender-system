@@ -18,11 +18,15 @@ The Movie Recommendation System is intended for individuals who seek personalize
 
 ## Project Implementation Steps
    1.Data Collection: Use popular datasets like MovieLens (contains millions of ratings) or the TMDB 5000 Movie Dataset            (includes detailed metadata like cast and crew).
+   
    2.Exploratory Data Analysis (EDA): Visualise data to find the most-watched movies, average ratings, and genre                   distributions using libraries like Matplotlib and Seaborn.
+   
    3.Preprocessing & Vectorization:
      **Convert textual data (tags, overviews) into numerical vectors using techniques like Bag-of-Words, TF-IDF, or                  CountVectorizer.
      **Handle missing values (NaNs) and normalize ratings to remove user bias.
+     
    4.Similarity Calculation: Use metrics like Cosine Similarity or Pearson Correlation to measure how closely related two           movies or users are.
+   
    5.Deployment: Build a web interface using frameworks like Streamlit or Flask to allow users to search for a movie and            receive real-time recommendations.
    
 ## Common Tools & Libraries
