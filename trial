@@ -1,0 +1,245 @@
+div align="center">
+
+# 🎬 Movie Recommender System
+
+### A hybrid, content + collaborative movie recommendation engine with a sleek Streamlit UI
+
+[![Python](https://img.shields.io/badge/Python-3.9+-6c5ce7?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Dataset](https://img.shields.io/badge/Dataset-TMDB%205000-8b7cf6?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata)
+[![License](https://img.shields.io/badge/License-MIT-4ade80?style=for-the-badge)](LICENSE)
+[![Made with ❤](https://img.shields.io/badge/Made%20with-%E2%9D%A4-ff6b6b?style=for-the-badge)]()
+
+<br>
+
+**Pick a movie you love → get a hand-picked list of what to watch next**, powered by a hybrid recommendation engine that blends content similarity with collaborative signals.
+
+[🚀 Live Demo](#-live-demo) • [✨ Features](#-features) • [🧠 How It Works](#-how-it-works) • [⚙️ Installation](#️-installation) • [📁 Project Structure](#-project-structure) • [🗺️ Roadmap](#️-roadmap)
+
+</div>
+
+<br>
+
+---
+
+## 🌟 Overview
+
+The **Movie Recommender System** is an interactive web app that suggests movies similar to any title you search for. Type a movie name (or hit **Surprise Me** 🎲), and the engine returns a curated set of recommendations — complete with posters, titles, and release dates — rendered in a clean, dark-themed, hexagon-tiled gallery.
+
+Under the hood, it combines two recommendation philosophies into one **hybrid engine**:
+
+- 🧩 **Content-based filtering** — matches movies by genre, cast, crew, and keyword similarity
+- 👥 **Collaborative filtering** — leans on patterns in how users historically rated/watched movies together
+
+The result is a system that's smart from your first search (no "cold start" problem) *and* gets sharper recommendations by learning from collective viewing patterns.
+
+<br>
+
+## 📸 Live Demo
+
+<div align="center">
+
+### 🔍 Search & Get Instant Recommendations
+Type any movie — the engine returns visually similar picks in a hexagon poster grid.
+
+<img src="assets/demo-search.png" alt="Movie Recommender - Search and Recommendation View" width="850">
+
+<br><br>
+
+### 🔥 Trending Movies & Surprise Me
+Browse trending titles or let the app pick something unexpected for you.
+
+<img src="assets/demo-trending.png" alt="Movie Recommender - Trending Movies View" width="850">
+
+</div>
+
+<br>
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🎯 Smart Recommendations
+Hybrid engine blends content-based and collaborative filtering so results feel both *relevant* and *personalized*.
+
+### 🔎 Instant Search
+Type-ahead dropdown to find and select any movie from the dataset in seconds.
+
+### 🎲 Surprise Me
+One click surfaces a random hand-picked movie when you're not sure what to search for.
+
+</td>
+<td width="50%" valign="top">
+
+### 🔥 Trending Carousel
+A rotating "Trending Movies" rail highlights currently popular titles.
+
+### 🖼️ Poster-Driven UI
+Hexagon-tiled poster cards (fetched via the TMDB API) with title + release date, all wrapped in a modern dark theme.
+
+### ⚡ Fast & Lightweight
+Precomputed similarity matrix means recommendations return instantly — no heavy runtime computation.
+
+</td>
+</tr>
+</table>
+
+<br>
+
+## 🧠 How It Works
+
+### System Architecture
+
+<div align="center">
+<img src="assets/architecture-diagram.png" alt="System Architecture Diagram" width="800">
+</div>
+
+The pipeline flows from raw data all the way to the UI:
+
+1. **TMDB 5000 Dataset** — movies + credits metadata (genres, cast, crew, keywords, overview) is loaded.
+2. **Data Preprocessing** — text fields are cleaned, tokenized, and merged into a unified "tags" feature using `pandas`.
+3. **Two parallel engines** compute similarity scores independently:
+   - **Content-Based Engine** — vectorizes tags (`CountVectorizer` / `TF-IDF`) and computes **cosine similarity** between movies.
+   - **Collaborative Engine** — derives similarity from patterns in user ratings/interactions across movies.
+4. **Hybrid Recommendation Engine** — fuses both scores into one final ranking.
+5. **Streamlit UI** — renders the ranked list as poster cards the user can browse.
+
+### Hybrid Scoring
+
+<div align="center">
+<img src="assets/scoring-pipeline.png" alt="Hybrid Scoring Pipeline" width="800">
+</div>
+
+For a selected movie, the final score for every candidate movie is a weighted combination:
+
+```
+final_score(movie) = α × content_similarity(movie) + (1 - α) × collaborative_similarity(movie)
+```
+
+- **α (alpha)** controls how much weight is given to content vs. collaborative signals — tunable based on how much interaction data is available.
+- The **Top-N** highest-scoring movies (excluding the selected one) are returned as recommendations.
+
+This hybrid approach avoids the two classic weaknesses of single-method recommenders:
+| Approach alone | Weakness | Hybrid fixes it by... |
+|---|---|---|
+| Content-based only | Can feel repetitive — always same genre/cast | Blending in collaborative signal for variety |
+| Collaborative only | Fails on new/less-rated movies ("cold start") | Falling back on content similarity |
+
+<br>
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+| Layer | Technology |
+|---|---|
+| **Frontend / UI** | Streamlit |
+| **Language** | Python 3.9+ |
+| **Data Handling** | Pandas, NumPy |
+| **ML / Similarity** | Scikit-learn (`CountVectorizer` / `TfidfVectorizer`, cosine similarity) |
+| **Dataset** | [TMDB 5000 Movies Dataset](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata) |
+| **Poster Images** | TMDB API |
+| **Deployment** | Streamlit Community Cloud |
+
+</div>
+
+<br>
+
+## ⚙️ Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/<your-username>/movie-recommender-system.git
+cd movie-recommender-system
+
+# 2. Create a virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate      # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Add your TMDB API key
+#    Create a .env file (or edit config.py) and add:
+#    TMDB_API_KEY=your_api_key_here
+
+# 5. Run the app
+streamlit run app.py
+```
+
+The app will open automatically at `http://localhost:8501`.
+
+<br>
+
+## 🚀 Usage
+
+1. Open the app and use the **"Type or select a movie"** dropdown to search for a title.
+2. Click **Show Recommendation** to get a hexagon grid of similar movies.
+3. Not sure what to pick? Hit **🎲 Surprise Me** for a random suggestion.
+4. Scroll down to **🔥 Trending Movies** to browse what's currently popular.
+
+<br>
+
+## 📁 Project Structure
+
+```
+movie-recommender-system/
+│
+├── app.py                     # Streamlit application entry point
+├── recommender/
+│   ├── content_based.py       # Content-based similarity engine
+│   ├── collaborative.py       # Collaborative filtering engine
+│   └── hybrid.py              # Combines both into final scores
+├── data/
+│   ├── tmdb_5000_movies.csv
+│   └── tmdb_5000_credits.csv
+├── models/
+│   └── similarity_matrix.pkl  # Precomputed similarity matrix
+├── assets/                    # Screenshots & diagrams (this README)
+├── requirements.txt
+└── README.md
+```
+
+<br>
+
+## 🗺️ Roadmap
+
+- [ ] User authentication + personalized watchlists
+- [ ] Real-time collaborative filtering with live user ratings
+- [ ] Genre/mood-based filters
+- [ ] Deploy public live demo link
+- [ ] Add trailer previews on hover
+
+<br>
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+<br>
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+<br>
+
+## 🙏 Acknowledgements
+
+- [TMDB](https://www.themoviedb.org/) for the dataset and poster/API access
+- [Streamlit](https://streamlit.io/) for the app framework
+
+<br>
+
+<div align="center">
+
+**⭐ If you found this project interesting, consider giving it a star!**
+
+</div>
