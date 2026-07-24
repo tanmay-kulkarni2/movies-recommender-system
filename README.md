@@ -8,7 +8,7 @@
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-f7931e?style=for-the-badge&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Dataset](https://img.shields.io/badge/Dataset-MovieLens-8b7cf6?style=for-the-badge)](https://grouplens.org/datasets/movielens/)
-
+[![License](https://img.shields.io/badge/License-MIT-4ade80?style=for-the-badge)](LICENSE)
 
 <br>
 
