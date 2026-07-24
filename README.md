@@ -8,7 +8,7 @@
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-f7931e?style=for-the-badge&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Dataset](https://img.shields.io/badge/Dataset-MovieLens-8b7cf6?style=for-the-badge)](https://grouplens.org/datasets/movielens/)
-[![License](https://img.shields.io/badge/License-MIT-4ade80?style=for-the-badge)](LICENSE)
+
 
 <br>
 
@@ -80,6 +80,11 @@ Hexagon-tiled poster cards with title + release date, wrapped in a modern dark t
 
 ### ⚡ Similarity-Powered
 Uses cosine similarity / Pearson correlation over a user-item matrix for fast, relevant matches.
+
+
+
+
+
 
 </td>
 </tr>
@@ -163,6 +168,8 @@ streamlit run app.py
 
 <br>
 
+ <img src="assets/architecture-diagram.png" alt="Movie Recommender - Trending Movies View" width="850">
+
 ## 📁 Project Structure
 
 ```
@@ -194,6 +201,9 @@ Movies-Recommender-System/
 - [ ] User authentication + personalized watchlists
 - [ ] Genre/mood-based filters
 - [ ] Deploy public live demo link
+
+
+ <img src="assets/scoring-pipeline.png" alt="Movie Recommender - Trending Movies View" width="850">
 
 <br>
 
