@@ -151,7 +151,6 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The app will open automatically at `http://localhost:8501`.
 
 <br>
 
@@ -209,11 +208,7 @@ Contributions, issues, and feature requests are welcome!
 
 <br>
 
-## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-<br>
 
 ## 🙏 Acknowledgements
 
