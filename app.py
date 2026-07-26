@@ -7,7 +7,7 @@ import random
 # ------------------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------------------
-API_KEY = "c3cb4316e3ff7ad445124a0287af1d89"   # <-- put your real TMDB API key here
+API_KEY = "ENTER YOUR API KEY"   # <-- put your real TMDB API key here
 
 st.set_page_config(page_title="Movie Recommender System", page_icon="🎬", layout="centered")
 
