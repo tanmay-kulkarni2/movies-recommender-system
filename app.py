@@ -4,87 +4,138 @@ import requests
 import pandas as pd
 import random
 
-API_KEY = "ENTER YOUR API KEY"
+# ------------------------------------------------------------------
+# CONFIG
+# ------------------------------------------------------------------
+API_KEY = "c3cb4316e3ff7ad445124a0287af1d89"   # <-- put your real TMDB API key here
 
-# Fetch movie details including IMDb link
+st.set_page_config(page_title="Movie Recommender System", page_icon="🎬", layout="centered")
+
+
+# ------------------------------------------------------------------
+# DATA HELPERS
+# ------------------------------------------------------------------
+@st.cache_data
 def fetch_movie_details(movie_id):
+    """Fetch full movie details (poster, rating, genres, IMDb link) from TMDB."""
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={API_KEY}&language=en-US"
-    response = requests.get(url)
-    data = response.json()
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException:
+        return {
+            "title": "Unavailable",
+            "poster": "https://via.placeholder.com/500x750?text=No+Poster",
+            "release_date": "N/A",
+            "rating": "N/A",
+            "genres": "",
+            "overview": "Could not fetch details for this movie.",
+            "imdb_url": None,
+        }
 
-    imdb_id = data.get("imdb_id", None)
+    imdb_id = data.get("imdb_id")
     imdb_url = f"https://www.imdb.com/title/{imdb_id}/" if imdb_id else None
 
-    details = {
+    return {
         "title": data.get("title", "Unknown"),
-        "poster": "https://image.tmdb.org/t/p/w500/" + data['poster_path'] if data.get('poster_path') else "https://via.placeholder.com/500x750?text=No+Poster",
+        "poster": "https://image.tmdb.org/t/p/w500/" + data["poster_path"]
+        if data.get("poster_path")
+        else "https://via.placeholder.com/500x750?text=No+Poster",
         "release_date": data.get("release_date", "N/A"),
         "rating": data.get("vote_average", "N/A"),
-        "genres": ", ".join([g['name'] for g in data.get("genres", [])]),
+        "genres": ", ".join([g["name"] for g in data.get("genres", [])]),
         "overview": data.get("overview", "No description available"),
-        "imdb_url": imdb_url
+        "imdb_url": imdb_url,
     }
-    return details
 
-# Recommendation function
+
 def recommend(movie):
-    movie_index = movies[movies['title'] == movie].index[0]
+    """Return top-5 recommended movies similar to the given movie title."""
+    movie_index = movies[movies["title"] == movie].index[0]
     distances = similarity[movie_index]
     movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
 
     recommended_movies = []
     for i in movies_list:
         movie_id = movies.iloc[i[0]].movie_id
-        details = fetch_movie_details(movie_id)
-        recommended_movies.append(details)
+        recommended_movies.append(fetch_movie_details(movie_id))
 
     return recommended_movies
 
-# Trending movies from TMDB
+
+@st.cache_data(ttl=3600)  # refresh trending list once an hour
 def fetch_trending_movies():
+    """Fetch today's trending movies from TMDB (reuses fetch_movie_details, no duplicate calls)."""
     url = f"https://api.themoviedb.org/3/trending/movie/day?api_key={API_KEY}"
-    response = requests.get(url)
-    data = response.json()
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException:
+        return []
+
     trending = []
     for movie in data.get("results", [])[:5]:
-        imdb_id = movie.get("id")
-        imdb_url = None
-        if imdb_id:
-            # fetch imdb_id from TMDB details
-            imdb_data = requests.get(f"https://api.themoviedb.org/3/movie/{imdb_id}?api_key={API_KEY}&language=en-US").json()
-            imdb_url = f"https://www.imdb.com/title/{imdb_data.get('imdb_id')}/" if imdb_data.get("imdb_id") else None
-
-        details = {
-            "title": movie.get("title", "Unknown"),
-            "poster": "https://image.tmdb.org/t/p/w500/" + movie['poster_path'] if movie.get('poster_path') else "https://via.placeholder.com/500x750?text=No+Poster",
-            "release_date": movie.get("release_date", "N/A"),
-            "rating": movie.get("vote_average", "N/A"),
-            "overview": movie.get("overview", "No description available"),
-            "imdb_url": imdb_url
-        }
+        details = fetch_movie_details(movie["id"])
         trending.append(details)
     return trending
 
-# Surprise Me function
+
 def surprise_me():
-    random_movie = random.choice(movies['title'].values)
+    random_movie = random.choice(movies["title"].values)
     return recommend(random_movie)
 
-# Streamlit UI
-st.title('🎬 Movie Recommender System')
 
-movies_dict = pickle.load(open('movies_dict.pkl','rb'))
+def render_movie_row(movie_details_list):
+    """Render a row of hexagon poster cards for a list of movie detail dicts."""
+    cols = st.columns(5)
+    for idx, col in enumerate(cols):
+        if idx < len(movie_details_list):
+            details = movie_details_list[idx]
+            imdb_url = details["imdb_url"] or "#"
+            with col:
+                st.markdown(
+                    f"""
+                    <a href="{imdb_url}" target="_blank">
+                        <div class="hexagon">
+                            <img src="{details['poster']}">
+                        </div>
+                    </a>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.markdown(f"**{details['title']}**")
+                rating_line = f"Release: {details['release_date']} | ⭐ {details['rating']}"
+                if details.get("genres"):
+                    rating_line += f" | {details['genres']}"
+                st.caption(rating_line)
+                st.write(details["overview"][:120] + "...")
+                if details["imdb_url"]:
+                    st.markdown(f"[More Info on IMDb]({details['imdb_url']})")
+
+
+# ------------------------------------------------------------------
+# LOAD DATA
+# ------------------------------------------------------------------
+st.title("🎬 Movie Recommender System")
+
+if API_KEY == "ENTER YOUR API KEY":
+    st.warning("⚠️ Add your TMDB API key in `app.py` before running — posters and details won't load without it.")
+
+movies_dict = pickle.load(open("movies_dict.pkl", "rb"))
 movies = pd.DataFrame(movies_dict)
-similarity = pickle.load(open('similarity.pkl','rb'))
+similarity = pickle.load(open("similarity.pkl", "rb"))
 
-movie_list = movies['title'].values
+movie_list = movies["title"].values
 selected_movie = st.selectbox("Type or select a movie", movie_list)
 
-# Cinematic Background CSS + Hexagon Hover + Glassmorphism
+# ------------------------------------------------------------------
+# STYLING — animated gradient background + hexagon hover effect
+# ------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    /* Animated gradient background */
     .stApp {
         background: linear-gradient(-45deg, #1c1c3c, #3c1c1c, #0d0d0d, #1c3c1c);
         background-size: 400% 400%;
@@ -96,8 +147,6 @@ st.markdown(
         50% {background-position: 100% 50%;}
         100% {background-position: 0% 50%;}
     }
-
-    /* Hexagon hover effect */
     .hexagon {
         width: 200px;
         height: 230px;
@@ -122,82 +171,32 @@ st.markdown(
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
-# Show Recommendations
-if st.button('Show Recommendation'):
-    recommendations = recommend(selected_movie)
-    cols = st.columns(5)
+# ------------------------------------------------------------------
+# SHOW RECOMMENDATIONS
+# ------------------------------------------------------------------
+if st.button("Show Recommendation"):
+    with st.spinner("Finding movies you'll love..."):
+        recommendations = recommend(selected_movie)
+    render_movie_row(recommendations)
 
-    for idx, col in enumerate(cols):
-        if idx < len(recommendations):
-            details = recommendations[idx]
-            imdb_url = details["imdb_url"]
-            with col:
-                st.markdown(
-                    f"""
-                    <a href="{imdb_url}" target="_blank">
-                        <div class="hexagon">
-                            <img src="{details['poster']}">
-                        </div>
-                    </a>
-                    """,
-                    unsafe_allow_html=True
-                )
-                st.markdown(f"**{details['title']}**")
-                st.caption(f"Release: {details['release_date']} | ⭐ {details['rating']} | {details['genres']}")
-                st.write(details["overview"][:120] + "...")
-                if imdb_url:
-                    st.markdown(f"[More Info on IMDb]({imdb_url})")
-
-# Surprise Me Button
+# ------------------------------------------------------------------
+# SURPRISE ME
+# ------------------------------------------------------------------
 if st.button("🎲 Surprise Me"):
-    recommendations = surprise_me()
+    with st.spinner("Picking something fun..."):
+        recommendations = surprise_me()
     st.subheader("Your Surprise Recommendations")
-    cols = st.columns(5)
-    for idx, col in enumerate(cols):
-        if idx < len(recommendations):
-            details = recommendations[idx]
-            imdb_url = details["imdb_url"]
-            with col:
-                st.markdown(
-                    f"""
-                    <a href="{imdb_url}" target="_blank">
-                        <div class="hexagon">
-                            <img src="{details['poster']}">
-                        </div>
-                    </a>
-                    """,
-                    unsafe_allow_html=True
-                )
-                st.markdown(f"**{details['title']}**")
-                st.caption(f"Release: {details['release_date']} | ⭐ {details['rating']} | {details['genres']}")
-                st.write(details["overview"][:120] + "...")
-                if imdb_url:
-                    st.markdown(f"[More Info on IMDb]({imdb_url})")
+    render_movie_row(recommendations)
 
-# Trending Movies Section
+# ------------------------------------------------------------------
+# TRENDING MOVIES
+# ------------------------------------------------------------------
 st.subheader("🔥 Trending Movies")
 trending = fetch_trending_movies()
-cols = st.columns(5)
-for idx, col in enumerate(cols):
-    if idx < len(trending):
-        details = trending[idx]
-        imdb_url = details["imdb_url"]
-        with col:
-            st.markdown(
-                f"""
-                <a href="{imdb_url}" target="_blank">
-                    <div class="hexagon">
-                        <img src="{details['poster']}">
-                    </div>
-                </a>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown(f"**{details['title']}**")
-            st.caption(f"Release: {details['release_date']} | ⭐ {details['rating']}")
-            st.write(details["overview"][:120] + "...")
-            if imdb_url:
-                st.markdown(f"[More Info on IMDb]({imdb_url})")
+if trending:
+    render_movie_row(trending)
+else:
+    st.info("Couldn't load trending movies right now — check your API key or internet connection.")
